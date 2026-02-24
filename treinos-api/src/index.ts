@@ -1,6 +1,7 @@
 // Import the framework and instantiate it
 import "dotenv/config";
 
+import fastifyCors from "@fastify/cors";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUI from "@fastify/swagger-ui";
 import Fastify from "fastify";
@@ -40,6 +41,11 @@ await app.register(fastifySwagger, {
 
 await app.register(fastifySwaggerUI, {
   routePrefix: "/docs",
+});
+
+await app.register(fastifyCors, {
+  origin: ["http://localhost:3000"],
+  credentials: true,
 });
 
 app.withTypeProvider<ZodTypeProvider>().route({
