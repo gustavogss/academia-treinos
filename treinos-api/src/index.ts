@@ -1,1 +1,2 @@
-console.log("Configurado com sucesso!");
+console.log("Configurado!");
+
