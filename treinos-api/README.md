@@ -42,4 +42,4 @@ export default defineConfig([
 }
 ```
 
--
+- FastiFy@5.7.4
