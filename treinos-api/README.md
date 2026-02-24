@@ -1,47 +1,61 @@
-# Treinos API
+# 🚀 Treinos API
 
-- API para consumir treinos
+API REST para gerenciamento e consumo de treinos, construída com foco em **tipagem forte**, **validação robusta** e **documentação automática**.
 
-## Stacks:
+---
 
-- Node@24.x
-- Typescript@5.9.3
-- Eslint@10.0.1
-- Prettier@3.8.1
-- Eslint Config Prettier@10.1.8:
+## 📦 Stack Principal
 
-```
-import js from "@eslint/js";
-import globals from "globals";
-import tseslint from "typescript-eslint";
-import { defineConfig } from "eslint/config";
-import eslintConfigPrettier from "eslint-config-prettier/flat";
+### 🔹 Runtime
 
+- [Node.js 24.x](https://nodejs.org/en/docs)
+- [pnpm 10.30.1](https://pnpm.io/installation)
 
-export default defineConfig([
-  { files: ["**/*.{js,mjs,cjs,ts,mts,cts}"], plugins: { js }, extends: ["js/recommended"], languageOptions: { globals: globals.node } },
-  tseslint.configs.recommended,
-  eslintConfigPrettier
-]);
+### 🔹 Linguagem
 
-```
+- [TypeScript 5.9.3](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-9.html)
 
-- Eslint Plugin Simple Sort@12.1.1
+### 🔹 Framework HTTP
 
-### Eslint Rules
+- [Fastify 5.7.4](https://fastify.dev/docs/latest/)
+- [@fastify/swagger 9.7.0](https://github.com/fastify/fastify-swagger)
+- [@fastify/swagger-ui 5.2.5](https://github.com/fastify/fastify-swagger-ui)
 
-- .vs-code/settings.json
+### 🔹 Validação e Tipagem
 
-```
-{
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "always"
-    }
+- [Zod 4.3.6](https://zod.dev/)
+- [fastify-type-provider-zod 6.1.0](https://github.com/turkerdev/fastify-type-provider-zod)
+
+### 🔹 Variáveis de Ambiente
+
+- [dotenv 17.3.1](https://github.com/motdotla/dotenv)
+
+---
+
+## 🛠️ Dev Stack
+
+### 🔹 Lint
+
+- [ESLint 9.39.2](https://eslint.org/docs/latest/)
+- [@eslint/js 10.0.1](https://www.npmjs.com/package/@eslint/js)
+- [typescript-eslint 8.56.1](https://typescript-eslint.io/)
+- [eslint-config-prettier 10.1.8](https://github.com/prettier/eslint-config-prettier)
+- [eslint-plugin-simple-import-sort 12.1.1](https://github.com/lydell/eslint-plugin-simple-import-sort)
+
+### 🔹 Formatter
+
+- [Prettier 3.8.1](https://prettier.io/docs/en/)
+
+### 🔹 Execução em Desenvolvimento
+
+- [tsx 4.21.0](https://github.com/esbuild-kit/tsx)
+
+---
+
+## ⚙️ Scripts
+
+```json
+"scripts": {
+  "dev": "tsx --watch src/index.ts"
 }
 ```
-
-- FastiFy@5.7.4
-
-- Documentation API: localhost/docs
