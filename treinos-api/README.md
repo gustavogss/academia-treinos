@@ -43,3 +43,5 @@ export default defineConfig([
 ```
 
 - FastiFy@5.7.4
+
+- Documentation API: localhost/docs
