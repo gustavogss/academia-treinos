@@ -1,4 +1,3 @@
-// Import the framework and instantiate it
 import "dotenv/config";
 
 import fastifyCors from "@fastify/cors";
@@ -13,7 +12,9 @@ import {
 } from "fastify-type-provider-zod";
 import { z } from "zod";
 
+import { Weekday } from "./generated/prisma/enums.js";
 import { auth } from "./lib/auth.js";
+import { CreateWorkoutPlan } from "./usecases/CreateWorkoutPlan.js";
 
 const app = Fastify({
   logger: true,
@@ -38,10 +39,6 @@ await app.register(fastifySwagger, {
   },
   transform: jsonSchemaTransform,
 });
-
-// await app.register(fastifySwaggerUI, {
-//   routePrefix: "/docs",
-// });
 
 await app.register(fastifyCors, {
   origin: ["http://localhost:3000"],
@@ -82,7 +79,7 @@ app.withTypeProvider<ZodTypeProvider>().route({
   url: "/",
   schema: {
     description: "Funcionando...",
-    tags: ["Funcionando..."],
+    tags: ["API"],
     response: {
       200: z.object({
         message: z.string(),
@@ -96,33 +93,121 @@ app.withTypeProvider<ZodTypeProvider>().route({
   },
 });
 
+app.withTypeProvider<ZodTypeProvider>().route({
+  method: "POST",
+  url: "/workout-plans",
+
+  schema: {
+    tags: ["Workout Plans"],
+
+    body: z.object({
+      name: z.string(),
+
+      workoutDays: z.array(
+        z.object({
+          name: z.string(),
+          weekDay: z.nativeEnum(Weekday),
+          isRest: z.boolean(),
+          estimatedDurationInSeconds: z.number(),
+          coverImageUrl: z.string().optional(),
+
+          exercises: z.array(
+            z.object({
+              order: z.number(),
+              name: z.string(),
+              sets: z.number(),
+              reps: z.number(),
+              restTimeInSeconds: z.number(),
+            }),
+          ),
+        }),
+      ),
+    }),
+
+    response: {
+      201: z.any(),
+
+      401: z.object({
+        error: z.string(),
+      }),
+
+      500: z.object({
+        error: z.string(),
+      }),
+    },
+  },
+
+  handler: async (request, reply) => {
+    try {
+      const headers = new Headers();
+
+      Object.entries(request.headers).forEach(([key, value]) => {
+        if (value) {
+          headers.append(key, String(value));
+        }
+      });
+
+      const session = await auth.api.getSession({
+        headers,
+      });
+
+      if (!session) {
+        return reply.status(401).send({
+          error: "Unauthorized",
+        });
+      }
+
+      const service = new CreateWorkoutPlan();
+
+      const result = await service.execute({
+        userId: session.user.id,
+        ...request.body,
+      });
+
+      return reply.status(201).send(result);
+    } catch (error) {
+      request.log.error(error);
+
+      return reply.status(500).send({
+        error: "Failed to create workout plan",
+      });
+    }
+  },
+});
+
 app.route({
   method: ["GET", "POST"],
   url: "/api/auth/*",
-  async handler(request, reply) {
+  handler: async (request, reply) => {
     try {
-      // Construct request URL
-      const url = new URL(request.url, `http://${request.headers.host}`);
+      const url = `http://${request.headers.host}${request.url}`;
 
-      // Convert Fastify headers to standard Headers object
       const headers = new Headers();
+
       Object.entries(request.headers).forEach(([key, value]) => {
-        if (value) headers.append(key, value.toString());
+        if (value) headers.append(key, String(value));
       });
-      // Create Fetch API-compatible request
-      const req = new Request(url.toString(), {
+
+      const req = new Request(url, {
         method: request.method,
         headers,
-        ...(request.body ? { body: JSON.stringify(request.body) } : {}),
+        body: request.body ? JSON.stringify(request.body) : undefined,
       });
-      // Process authentication request
+
       const response = await auth.handler(req);
-      // Forward response to client
+
       reply.status(response.status);
-      response.headers.forEach((value, key) => reply.header(key, value));
-      reply.send(response.body ? await response.text() : null);
+
+      response.headers.forEach((value, key) => {
+        reply.header(key, value);
+      });
+
+      const body = await response.text();
+
+      reply.send(body);
     } catch (error) {
-      app.log.error(error);
+      request.log.error(error);
+
       reply.status(500).send({
         error: "Internal authentication error",
         code: "AUTH_FAILURE",
@@ -132,7 +217,11 @@ app.route({
 });
 
 try {
-  await app.listen({ port: Number(process.env.PORT) || 8081 });
+  await app.listen({
+    port: Number(process.env.PORT) || 8081,
+  });
+
+  console.log("🚀 Server running on http://localhost:8081");
 } catch (err) {
   app.log.error(err);
   process.exit(1);
